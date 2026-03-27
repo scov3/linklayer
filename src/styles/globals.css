@@ -4,54 +4,62 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 210 40% 98%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 238.7 83.5% 66.7%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Основная светлая тема (бумажный стиль) */
+    --background: 24 10% 93%; /* Очень светлый бежевый (почти белый) */
+    --foreground: 30 20% 10%; /* Темный для контраста */
+    --card: 24 15% 85%; /* Бежево-серый */
+    --card-foreground: 30 20% 10%;
+    --primary: 238 60% 40%; /* Синий оттенок #2e3ea6 преобразованный в HSL */
+    --primary-foreground: 24 10% 93%;
+    --secondary: 24 10% 80%; /* Более темный бежевый */
+    --secondary-foreground: 30 20% 15%;
+    --muted: 24 10% 85%;
+    --muted-foreground: 30 15% 30%;
+    --accent: 24 15% 75%; /* Бежево-серый для акцентов */
+    --accent-foreground: 30 20% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 238.7 83.5% 66.7%;
+    --destructive-foreground: 24 10% 93%;
+    --border: 24 10% 70%; /* Нейтральный бежево-серый */
+    --input: 24 10% 70%;
+    --ring: 238 60% 40%;
     --radius: 0.5rem;
 
-    --graph-node: 238.7 83.5% 66.7%;
-    --graph-node-active: 238.7 83.5% 76.7%;
-    --graph-edge: 215.4 16.3% 46.9%;
-    --graph-edge-active: 238.7 83.5% 66.7%;
+    /* Специфичные для графа цвета */
+    --graph-node: 238 60% 40%;
+    --graph-node-active: 238 60% 50%;
+    --graph-edge: 30 15% 30%;
+    --graph-edge-active: 238 60% 40%;
+
+    /* Бумажный оттенок #d4b8a1 */
+    --paper-tone: 24 25% 72%; /* HSL для #d4b8a1 */
+    --paper-tone-foreground: 30 20% 20%; /* Темный оттенок для текста на бумажном фоне */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 217.2 32.6% 17.5%;
-    --card-foreground: 210 40% 98%;
-    --primary: 238.7 83.5% 76.7%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 70.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 25%;
-    --input: 217.2 32.6% 25%;
-    --ring: 238.7 83.5% 76.7%;
+    /* Темная тема (тепловатый серый) */
+    --background: 225 5% 18%; /* Тепловатый темный серый */
+    --foreground: 45 10% 90%; /* Светлый для контраста */
+    --card: 225 5% 22%; /* Немного светлее для карточек */
+    --card-foreground: 45 10% 90%;
+    --primary: 238 60% 55%; /* Более светлый синий для темной темы */
+    --primary-foreground: 225 5% 15%;
+    --secondary: 225 5% 25%; /* Сlightly lighter for secondary elements */
+    --secondary-foreground: 45 10% 85%;
+    --muted: 225 5% 20%;
+    --muted-foreground: 40 10% 60%;
+    --accent: 225 5% 25%;
+    --accent-foreground: 45 10% 90%;
+    --destructive: 0 62.8% 30.6%; /* Темнее красный для темной темы */
+    --destructive-foreground: 45 10% 90%;
+    --border: 225 5% 30%;
+    --input: 225 5% 15%;
+    --ring: 238 60% 55%;
 
-    --graph-node: 238.7 83.5% 76.7%;
-    --graph-node-active: 238.7 83.5% 86.7%;
-    --graph-edge: 215 20.2% 65.1%;
-    --graph-edge-active: 238.7 83.5% 76.7%;
+    /* Специфичные для графа цвета в темной теме */
+    --graph-node: 238 60% 55%;
+    --graph-node-active: 238 60% 65%;
+    --graph-edge: 40 10% 60%;
+    --graph-edge-active: 238 60% 55%;
   }
 }
 
