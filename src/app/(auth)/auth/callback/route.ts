@@ -4,16 +4,25 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const next = searchParams.get('next') ?? '/vault';
+
+  console.log('[Callback] code:', code);
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
+    console.log('[Callback] exchangeCodeForSession:', {
+      error: error?.message,
+      session: !!data.session,
+      user: data.session?.user?.email,
+    });
+
+    if (!error && data.session) {
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
+  console.log('[Callback] redirecting to login with error');
   return NextResponse.redirect(`${origin}/login?error=auth`);
 }

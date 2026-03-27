@@ -1,17 +1,17 @@
-import { create } from 'zustand'
-import { createClient } from '@/lib/supabase/client'
-import type { Vault } from '@/lib/supabase/types'
+import { createClient } from '@/lib/supabase/client';
+import type { Vault } from '@/lib/supabase/types';
+import { create } from 'zustand';
 
 interface VaultState {
-  vaults: Vault[]
-  currentVault: Vault | null
-  isLoading: boolean
+  vaults: Vault[];
+  currentVault: Vault | null;
+  isLoading: boolean;
 
-  fetchVaults: () => Promise<void>
-  createVault: (name: string, description?: string) => Promise<Vault>
-  setCurrentVault: (vault: Vault | null) => void
-  updateVault: (id: string, data: Partial<Vault>) => Promise<void>
-  deleteVault: (id: string) => Promise<void>
+  fetchVaults: () => Promise<void>;
+  createVault: (name: string, description?: string) => Promise<Vault>;
+  setCurrentVault: (vault: Vault | null) => void;
+  updateVault: (id: string, data: Partial<Vault>) => Promise<void>;
+  deleteVault: (id: string) => Promise<void>;
 }
 
 export const useVaultStore = create<VaultState>((set, get) => ({
@@ -20,70 +20,82 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   isLoading: false,
 
   fetchVaults: async () => {
-    set({ isLoading: true })
-    const supabase = createClient()
+    console.log('[VaultStore] fetchVaults called');
+    set({ isLoading: true });
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('vaults')
       .select('*')
-      .order('updated_at', { ascending: false })
+      .order('updated_at', { ascending: false });
+
+    console.log('[VaultStore] fetchVaults result:', { count: data?.length, error });
 
     if (!error && data) {
-      set({ vaults: data, isLoading: false })
+      set({ vaults: data, isLoading: false });
     } else {
-      set({ isLoading: false })
+      console.error('[VaultStore] Error:', error);
+      set({ isLoading: false });
     }
   },
 
   createVault: async (name, description) => {
-    const supabase = createClient()
+    console.log('[VaultStore] createVault called:', name);
+    const supabase = createClient();
 
-    const { data: user } = await supabase.auth.getUser()
-    if (!user.user) throw new Error('Not authenticated')
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+
+    if (!user) {
+      console.error('[VaultStore] No user found');
+      throw new Error('Not authenticated');
+    }
+
+    console.log('[VaultStore] Creating vault for user:', user.id);
 
     const { data, error } = await supabase
       .from('vaults')
-      .insert({ name, description, owner_id: user.user.id })
+      .insert({ name, description, owner_id: user.id })
       .select()
-      .single()
+      .single();
 
-    if (error) throw error
+    console.log('[VaultStore] createVault result:', { data, error });
 
-    set((state) => ({ vaults: [data, ...state.vaults] }))
-    return data
+    if (error) {
+      console.error('[VaultStore] Error creating vault:', error);
+      throw error;
+    }
+
+    set((state) => ({ vaults: [data, ...state.vaults] }));
+    return data;
   },
 
   setCurrentVault: (vault) => set({ currentVault: vault }),
 
   updateVault: async (id, data) => {
-    const supabase = createClient()
+    const supabase = createClient();
 
-    const { error } = await supabase
-      .from('vaults')
-      .update(data)
-      .eq('id', id)
+    const { error } = await supabase.from('vaults').update(data).eq('id', id);
 
-    if (error) throw error
+    if (error) throw error;
 
     set((state) => ({
       vaults: state.vaults.map((v) => (v.id === id ? { ...v, ...data } : v)),
       currentVault:
-        state.currentVault?.id === id
-          ? { ...state.currentVault, ...data }
-          : state.currentVault,
-    }))
+        state.currentVault?.id === id ? { ...state.currentVault, ...data } : state.currentVault,
+    }));
   },
 
   deleteVault: async (id) => {
-    const supabase = createClient()
+    const supabase = createClient();
 
-    const { error } = await supabase.from('vaults').delete().eq('id', id)
+    const { error } = await supabase.from('vaults').delete().eq('id', id);
 
-    if (error) throw error
+    if (error) throw error;
 
     set((state) => ({
       vaults: state.vaults.filter((v) => v.id !== id),
       currentVault: state.currentVault?.id === id ? null : state.currentVault,
-    }))
+    }));
   },
-}))
+}));

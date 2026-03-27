@@ -2,10 +2,9 @@
 
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
-import { useAuthStore } from '@/store/auth-store';
+import { createClient } from '@/lib/supabase/client';
 import { useVaultStore } from '@/store/vault-store';
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function AppLayout({
@@ -13,30 +12,37 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const { user, isLoading: authIsLoading, isInitialized, initialize } = useAuthStore();
-  const { vaults, fetchVaults, isLoading: vaultsIsLoading } = useVaultStore();
-
-  const [mounted, setMounted] = useState(false);
+  const { vaults, fetchVaults } = useVaultStore();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-    initialize();
-  }, [initialize]);
+    const supabase = createClient();
 
-  useEffect(() => {
-    if (isInitialized && !user) {
-      router.push('/login');
-    }
-  }, [user, isInitialized, router]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[AppLayout] Session:', !!session?.user);
+      setUser(session?.user ?? null);
+      setLoading(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchVaults();
-    }
-  }, [user, fetchVaults]);
+      if (session?.user) {
+        fetchVaults();
+      }
+    });
 
-  if (!mounted || !isInitialized || authIsLoading || vaultsIsLoading) {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('[AppLayout] Auth change:', !!session?.user);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchVaults();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [fetchVaults]);
+
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -45,6 +51,7 @@ export default function AppLayout({
   }
 
   if (!user) {
+    window.location.href = '/login';
     return null;
   }
 

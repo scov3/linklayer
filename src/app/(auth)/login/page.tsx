@@ -5,18 +5,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/store/auth-store';
 import { Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
-  const { signInWithOAuth, isLoading: authIsLoading } = useAuthStore();
+  const { signInWithOAuth, isLoading, initialize, user } = useAuthStore();
   const router = useRouter();
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithOAuth('google');
-      // После успешного входа пользователь будет перенаправлен на главную страницу
-    } catch (error) {
-      console.error('Error signing in:', error);
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/vault');
     }
+  }, [user, router]);
+
+  const handleGoogleSignIn = async () => {
+    await signInWithOAuth('google');
   };
 
   return (
@@ -35,12 +41,12 @@ export default function LoginPage() {
               onClick={handleGoogleSignIn}
               variant="outline"
               className="w-full"
-              disabled={authIsLoading}
+              disabled={isLoading}
             >
-              {authIsLoading ? (
+              {isLoading ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2" />
-                  Вход...
+                  Загрузка...
                 </>
               ) : (
                 <>

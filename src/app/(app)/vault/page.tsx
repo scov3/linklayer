@@ -1,25 +1,55 @@
-'use client'
+'use client';
 
-import { useVaultStore } from '@/store/vault-store'
-import { useAuthStore } from '@/store/auth-store'
-import { Button } from '@/components/ui/button'
-import { Plus, LogOut, FolderOpen } from 'lucide-react'
-import { useEffect } from 'react'
-import Link from 'next/link'
+import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/store/auth-store';
+import { useVaultStore } from '@/store/vault-store';
+import { FolderOpen, LogOut, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function VaultPage() {
-  const { vaults, fetchVaults, createVault, isLoading } = useVaultStore()
-  const { profile, signOut } = useAuthStore()
+  const { vaults, fetchVaults, createVault, isLoading } = useVaultStore();
+  const { user, signOut, initialize } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    fetchVaults()
-  }, [fetchVaults])
+    setMounted(true);
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (user) {
+      fetchVaults();
+    }
+  }, [user, fetchVaults]);
 
   const handleCreateVault = async () => {
-    const name = prompt('Название хранилища:')
+    const name = prompt('Название хранилища:');
     if (name) {
-      await createVault(name)
+      try {
+        await createVault(name);
+      } catch (error) {
+        console.error('Error creating vault:', error);
+        alert('Ошибка создания хранилища');
+      }
     }
+  };
+
+  if (!mounted) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Пожалуйста, войдите в систему</p>
+      </div>
+    );
   }
 
   return (
@@ -28,9 +58,7 @@ export default function VaultPage() {
         <div className="container flex h-16 items-center justify-between">
           <h1 className="text-xl font-bold">LinkLayer</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              {profile?.email}
-            </span>
+            <span className="text-sm text-muted-foreground">{user.email}</span>
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4" />
             </Button>
@@ -52,14 +80,12 @@ export default function VaultPage() {
         ) : vaults.length === 0 ? (
           <div className="text-center py-12">
             <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Нет хранилищ. Создайте первое!
-            </p>
+            <p className="text-muted-foreground">Нет хранилищ. Создайте первое!</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {vaults.map((vault) => (
-              <Link key={vault.id} href={`/app/vault/${vault.id}`}>
+              <Link key={vault.id} href={`/vault/${vault.id}`}>
                 <div className="p-4 border rounded-lg hover:bg-accent transition cursor-pointer">
                   <h3 className="font-medium">{vault.name}</h3>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -72,5 +98,5 @@ export default function VaultPage() {
         )}
       </main>
     </div>
-  )
+  );
 }
