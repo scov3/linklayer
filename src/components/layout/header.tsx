@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function Header() {
   return (
-    <header className="border-b">
+    <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-10">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Sheet>
@@ -18,13 +18,16 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-64">
               <nav className="grid gap-2 py-4">
-                <Link href="/" className="px-4 py-2 rounded-md hover:bg-accent">
+                <Link href="/" className="px-4 py-2 rounded-md hover:bg-accent transition-colors">
                   <span className="flex items-center gap-2">
                     <NotebookText className="h-4 w-4" />
                     Хранилища
                   </span>
                 </Link>
-                <Link href="/vault/new" className="px-4 py-2 rounded-md hover:bg-accent">
+                <Link
+                  href="/vault/new"
+                  className="px-4 py-2 rounded-md hover:bg-accent transition-colors"
+                >
                   <span className="flex items-center gap-2">
                     <NotebookText className="h-4 w-4" />
                     Создать хранилище
@@ -35,7 +38,7 @@ export default function Header() {
           </Sheet>
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Network className="h-6 w-6" />
-            <span>LinkLayer</span>
+            <span className="text-lg">LinkLayer</span>
           </Link>
         </div>
 

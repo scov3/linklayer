@@ -11,7 +11,7 @@ interface SidebarProps {
 
 export default function Sidebar({ vaults = [] }: SidebarProps) {
   return (
-    <aside className="hidden border-r md:block w-64 h-full">
+    <aside className="hidden border-r md:block w-64 h-full bg-background/50 backdrop-blur-sm">
       <div className="h-full flex flex-col">
         <div className="p-4 border-b">
           <Button asChild className="w-full">
@@ -35,7 +35,7 @@ export default function Sidebar({ vaults = [] }: SidebarProps) {
                 <Link
                   key={vault.id}
                   href={`/vault/${vault.id}`}
-                  className="block px-4 py-2 rounded-md text-sm hover:bg-accent"
+                  className="block px-4 py-2 rounded-lg text-sm hover:bg-accent transition-colors"
                 >
                   <span className="flex items-center gap-2">
                     <NotebookText className="h-4 w-4" />
@@ -46,17 +46,23 @@ export default function Sidebar({ vaults = [] }: SidebarProps) {
             )}
           </div>
 
-          <div className="mt-8 space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="mt-6 space-y-1">
+            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-6">
               Навигация
             </h3>
-            <Link href="/" className="block px-4 py-2 rounded-md text-sm hover:bg-accent">
+            <Link
+              href="/"
+              className="block px-4 py-2 rounded-lg text-sm hover:bg-accent transition-colors"
+            >
               <span className="flex items-center gap-2">
                 <NotebookText className="h-4 w-4" />
                 Все хранилища
               </span>
             </Link>
-            <Link href="/settings" className="block px-4 py-2 rounded-md text-sm hover:bg-accent">
+            <Link
+              href="/settings"
+              className="block px-4 py-2 rounded-lg text-sm hover:bg-accent transition-colors"
+            >
               <span className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Настройки
