@@ -8,19 +8,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md',
+        default: 'bg-primary text-primary-foreground hover:bg-primary/80 shadow-sm hover:shadow-md',
         destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md',
+          'bg-destructive text-destructive-foreground hover:bg-destructive/80 shadow-sm hover:shadow-md',
         outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm hover:shadow-md',
+          'border border-input bg-background hover:bg-primary/10 hover:text-primary-foreground shadow-sm hover:shadow-md',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm hover:shadow-md',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
+          'bg-secondary text-secondary-foreground hover:bg-secondary/70 shadow-sm hover:shadow-md',
+        ghost: 'hover:bg-primary/10 hover:text-primary-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
         paper:
           'bg-[hsl(var(--paper-tone))] text-foreground hover:bg-[hsl(24,20%,65%)] shadow-sm hover:shadow-md', // Бумажный стиль для светлой темы
         'paper-outline':
-          'border border-[hsl(var(--paper-tone))] bg-background hover:bg-muted shadow-sm hover:shadow-md', // Обведенная бумажная кнопка
+          'border border-[hsl(var(--paper-tone))] bg-background hover:bg-primary/10 hover:text-primary-foreground shadow-sm hover:shadow-md', // Обведенная бумажная кнопка
       },
       size: {
         default: 'h-10 px-4 py-2 rounded-lg',

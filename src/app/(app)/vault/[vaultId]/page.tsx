@@ -16,14 +16,23 @@ import {
   Users,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function VaultPage() {
   const params = useParams<{ vaultId: string }>();
   const vaultId = params.vaultId;
-  const { currentVault } = useVaultStore();
-  const { notes } = useNotesStore();
+  const { currentVault, fetchVaultById, isCurrentVaultLoading } = useVaultStore();
+  const { notes, fetchNotes } = useNotesStore();
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Загрузка информации о конкретном хранилище
+  useEffect(() => {
+    if (vaultId) {
+      fetchVaultById(vaultId);
+      // Также загрузим заметки для этого хранилища
+      fetchNotes(vaultId);
+    }
+  }, [vaultId, fetchVaultById, fetchNotes]);
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -31,14 +40,18 @@ export default function VaultPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              {currentVault?.name || 'Загрузка...'}
-              <Badge variant="secondary" className="capitalize">
-                {currentVault?.is_shared ? 'Общее' : 'Личное'}
-              </Badge>
+              {isCurrentVaultLoading ? 'Загрузка...' : currentVault?.name || 'Хранилище не найдено'}
+              {!isCurrentVaultLoading && currentVault && (
+                <Badge variant="secondary" className="capitalize">
+                  {currentVault.is_shared ? 'Общее' : 'Личное'}
+                </Badge>
+              )}
             </h1>
-            <p className="text-muted-foreground mt-1">
-              {currentVault?.description || `Хранилище "${currentVault?.name}"`}
-            </p>
+            {!isCurrentVaultLoading && currentVault && (
+              <p className="text-muted-foreground mt-1">
+                {currentVault.description || `Хранилище "${currentVault.name}"`}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <Button variant="outline">
@@ -63,8 +76,8 @@ export default function VaultPage() {
             type="button"
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'dashboard'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
+                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
             }`}
             onClick={() => setActiveTab('dashboard')}
           >
@@ -77,8 +90,8 @@ export default function VaultPage() {
             type="button"
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'notes'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
+                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
             }`}
             onClick={() => setActiveTab('notes')}
           >
@@ -91,22 +104,8 @@ export default function VaultPage() {
             type="button"
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'graph'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-            onClick={() => setActiveTab('graph')}
-          >
-            <div className="flex items-center gap-2">
-              <Network className="w-4 h-4" />
-              Граф
-            </div>
-          </button>
-          <button
-            type="button"
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'chat'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
+                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
             }`}
             onClick={() => setActiveTab('chat')}
           >
@@ -118,11 +117,11 @@ export default function VaultPage() {
           <button
             type="button"
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'members'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              activeTab === 'settings'
+                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
+                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
             }`}
-            onClick={() => setActiveTab('members')}
+            onClick={() => setActiveTab('settings')}
           >
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -132,11 +131,11 @@ export default function VaultPage() {
           <button
             type="button"
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'settings'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              activeTab === 'chat'
+                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
+                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
             }`}
-            onClick={() => setActiveTab('settings')}
+            onClick={() => setActiveTab('chat')}
           >
             <div className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -185,9 +184,15 @@ export default function VaultPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{currentVault?.is_shared ? '3' : '1'}</p>
+                <p className="text-3xl font-bold">
+                  {isCurrentVaultLoading ? '...' : currentVault?.is_shared ? '3' : '1'}
+                </p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {currentVault?.is_shared ? 'Совместная работа' : 'Личное хранилище'}
+                  {isCurrentVaultLoading
+                    ? 'Загрузка...'
+                    : currentVault?.is_shared
+                      ? 'Совместная работа'
+                      : 'Личное хранилище'}
                 </p>
               </CardContent>
             </Card>
@@ -277,7 +282,9 @@ export default function VaultPage() {
                   <div>
                     <h4 className="font-medium">Название хранилища</h4>
                     <p className="text-sm text-muted-foreground">
-                      {currentVault?.name || 'Загрузка...'}
+                      {isCurrentVaultLoading
+                        ? 'Загрузка...'
+                        : currentVault?.name || 'Хранилище не найдено'}
                     </p>
                   </div>
                   <Button variant="outline">Редактировать</Button>
@@ -287,7 +294,11 @@ export default function VaultPage() {
                   <div>
                     <h4 className="font-medium">Тип доступа</h4>
                     <p className="text-sm text-muted-foreground">
-                      {currentVault?.is_shared ? 'Общее хранилище' : 'Личное хранилище'}
+                      {isCurrentVaultLoading
+                        ? 'Загрузка...'
+                        : currentVault?.is_shared
+                          ? 'Общее хранилище'
+                          : 'Личное хранилище'}
                     </p>
                   </div>
                   <Button variant="outline">Изменить</Button>

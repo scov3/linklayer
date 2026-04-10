@@ -36,7 +36,7 @@ async function addTagsToNote(supabase: any, note: Note, tagNames: string[]): Pro
   if (!user.data.user) throw new Error('Not authenticated');
 
   // Получаем или создаем теги
-  const tagsWithIds = [];
+  const tagsWithIds: Tag[] = [];
   for (const tagName of tagNames) {
     // Проверяем, существует ли тег
     const { data: existingTag, error: tagError } = await supabase
@@ -66,7 +66,13 @@ async function addTagsToNote(supabase: any, note: Note, tagNames: string[]): Pro
       tagId = existingTag.id;
     }
 
-    tagsWithIds.push({ id: tagId, name: tagName, vault_id: note.vault_id, color: '' });
+    tagsWithIds.push({
+      id: tagId,
+      name: tagName,
+      vault_id: note.vault_id,
+      color: '',
+      created_at: new Date().toISOString(),
+    });
   }
 
   // Создаем связи между заметкой и тегами
@@ -115,7 +121,7 @@ async function updateNoteTags(
   }
 
   // Добавляем новые теги
-  const tagsWithIds = [];
+  const tagsWithIds: Tag[] = [];
   for (const tagName of tagNames) {
     // Проверяем, существует ли тег
     const { data: existingTag, error: tagError } = await supabase
@@ -145,7 +151,13 @@ async function updateNoteTags(
       tagId = existingTag.id;
     }
 
-    tagsWithIds.push({ id: tagId, name: tagName, vault_id: note.vault_id, color: '' });
+    tagsWithIds.push({
+      id: tagId,
+      name: tagName,
+      vault_id: note.vault_id,
+      color: '',
+      created_at: new Date().toISOString(),
+    });
   }
 
   // Создаем связи между заметкой и тегами
@@ -214,19 +226,20 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       const notesWithTags = await Promise.all(
         notesData.map(async (note) => {
           const { data: tagsData, error: tagsError } = await supabase
-            .from('tags')
+            .from('note_tags')
             .select(`
-              *
+              tags!inner(*)
             `)
-            .eq('note_tags.note_id', note.id)
-            .eq('note_tags.vault_id', vaultId);
+            .eq('note_id', note.id);
 
           if (tagsError) {
             console.error(`Error fetching tags for note ${note.id}:`, tagsError);
             return { ...note, tags: [] };
           }
 
-          return { ...note, tags: tagsData || [] };
+          // Extract tags from the join result
+          const tags = tagsData.map((item) => item.tags);
+          return { ...note, tags };
         })
       );
 

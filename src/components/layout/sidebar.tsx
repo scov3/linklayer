@@ -51,7 +51,7 @@ export default function Sidebar({ vaults = [] }: SidebarProps) {
               Навигация
             </h3>
             <Link
-              href="/"
+              href="/vault"
               className="block px-4 py-2 rounded-lg text-sm hover:bg-accent transition-colors"
             >
               <span className="flex items-center gap-2">

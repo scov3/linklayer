@@ -6,8 +6,10 @@ interface VaultState {
   vaults: Vault[];
   currentVault: Vault | null;
   isLoading: boolean;
+  isCurrentVaultLoading: boolean;
 
   fetchVaults: () => Promise<void>;
+  fetchVaultById: (id: string) => Promise<Vault>;
   createVault: (name: string, description?: string) => Promise<Vault>;
   setCurrentVault: (vault: Vault | null) => void;
   updateVault: (id: string, data: Partial<Vault>) => Promise<void>;
@@ -18,6 +20,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   vaults: [],
   currentVault: null,
   isLoading: false,
+  isCurrentVaultLoading: false,
 
   fetchVaults: async () => {
     console.log('[VaultStore] fetchVaults called');
@@ -84,6 +87,23 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       currentVault:
         state.currentVault?.id === id ? { ...state.currentVault, ...data } : state.currentVault,
     }));
+  },
+
+  fetchVaultById: async (id) => {
+    const supabase = createClient();
+
+    set({ isCurrentVaultLoading: true });
+
+    const { data, error } = await supabase.from('vaults').select('*').eq('id', id).single();
+
+    if (error) {
+      console.error('[VaultStore] Error fetching vault by id:', error);
+      set({ isCurrentVaultLoading: false });
+      throw error;
+    }
+
+    set({ currentVault: data, isCurrentVaultLoading: false });
+    return data;
   },
 
   deleteVault: async (id) => {

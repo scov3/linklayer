@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils/cn';
+import * as React from 'react';
 
 function Separator({
   className,
@@ -18,7 +18,7 @@ function Separator({
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Separator }
+export { Separator };

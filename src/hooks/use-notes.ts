@@ -1,24 +1,24 @@
-import { useEffect } from 'react'
-import { useNotesStore } from '@/store/notes-store'
+import { useNotesStore } from '@/store/notes-store';
+import { useEffect } from 'react';
 
 export function useNotes(vaultId: string) {
-  const { notes, fetchNotes, isLoading, error, clearNotes } = useNotesStore()
+  const { notes, fetchNotes, isLoading, error, clearNotes } = useNotesStore();
 
   useEffect(() => {
     if (vaultId) {
-      fetchNotes(vaultId)
+      fetchNotes(vaultId);
 
       // Очищаем заметки при размонтировании
       return () => {
-        clearNotes()
-      }
+        clearNotes();
+      };
     }
-  }, [vaultId, fetchNotes, clearNotes])
+  }, [vaultId, fetchNotes, clearNotes]);
 
   return {
     notes,
     isLoading,
     error,
-    refetch: () => fetchNotes(vaultId)
-  }
+    refetch: () => fetchNotes(vaultId),
+  };
 }

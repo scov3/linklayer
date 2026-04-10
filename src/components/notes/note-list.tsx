@@ -1,26 +1,32 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Plus, Edit, Trash, Calendar } from 'lucide-react'
-import { Note } from '@/lib/supabase/types'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Note, Tag } from '@/lib/supabase/types';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { Calendar, Edit, Plus, Trash } from 'lucide-react';
+import { Badge } from '../ui/badge';
+
+// Тип для заметки с тегами
+type NoteWithTags = Note & {
+  tags?: Tag[];
+};
 
 interface NoteListProps {
-  notes: Note[]
-  currentNoteId?: string | null
-  onSelectNote: (note: Note) => void
-  onEditNote: (note: Note) => void
-  onDeleteNote: (noteId: string) => void
-  onCreateNew: () => void
+  notes: NoteWithTags[];
+  currentNoteId?: string | null;
+  onSelectNote: (note: NoteWithTags) => void;
+  onEditNote: (note: NoteWithTags) => void;
+  onDeleteNote: (noteId: string) => void;
+  onCreateNew: () => void;
 }
 
-export default function NoteList({ 
-  notes, 
-  currentNoteId, 
-  onSelectNote, 
-  onEditNote, 
-  onDeleteNote, 
-  onCreateNew 
+export default function NoteList({
+  notes,
+  currentNoteId,
+  onSelectNote,
+  onEditNote,
+  onDeleteNote,
+  onCreateNew,
 }: NoteListProps) {
   return (
     <div className="space-y-4">
@@ -31,7 +37,7 @@ export default function NoteList({
           Новая
         </Button>
       </div>
-      
+
       {notes.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           <p>Нет заметок</p>
@@ -40,8 +46,8 @@ export default function NoteList({
       ) : (
         <div className="space-y-2">
           {notes.map((note) => (
-            <Card 
-              key={note.id} 
+            <Card
+              key={note.id}
               className={`cursor-pointer hover:bg-accent transition-colors ${
                 currentNoteId === note.id ? 'bg-accent border-primary' : ''
               }`}
@@ -55,8 +61,8 @@ export default function NoteList({
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        onEditNote(note)
+                        e.stopPropagation();
+                        onEditNote(note);
                       }}
                     >
                       <Edit className="w-4 h-4" />
@@ -65,8 +71,8 @@ export default function NoteList({
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        onDeleteNote(note.id)
+                        e.stopPropagation();
+                        onDeleteNote(note.id);
                       }}
                     >
                       <Trash className="w-4 h-4" />
@@ -80,13 +86,29 @@ export default function NoteList({
                   {format(new Date(note.updated_at), 'dd MMM yyyy HH:mm', { locale: ru })}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1 truncate">
-                  {note.content.substring(0, 100)}{note.content.length > 100 ? '...' : ''}
+                  {note.content.substring(0, 100)}
+                  {note.content.length > 100 ? '...' : ''}
                 </p>
+
+                {/* Отображение тегов */}
+                {note.tags && note.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {note.tags.map((tag) => (
+                      <Badge
+                        key={tag.id}
+                        variant="secondary"
+                        style={{ backgroundColor: `${tag.color}20`, color: tag.color }}
+                      >
+                        #{tag.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }

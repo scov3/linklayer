@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react';
 
 interface GraphViewProps {
-  vaultId: string
+  vaultId: string;
 }
 
 export default function GraphView({ vaultId }: GraphViewProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // В дальнейшем тут будет реализация графа
@@ -21,14 +21,9 @@ export default function GraphView({ vaultId }: GraphViewProps) {
             <p class="text-sm text-muted-foreground">Компонент визуализации графа будет реализован далее</p>
           </div>
         </div>
-      `
+      `;
     }
-  }, [vaultId])
+  }, [vaultId]);
 
-  return (
-    <div 
-      ref={containerRef} 
-      className="w-full h-full rounded-lg border bg-muted"
-    />
-  )
+  return <div ref={containerRef} className="w-full h-full rounded-lg border bg-muted" />;
 }

@@ -1,27 +1,25 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useAuthStore } from '@/store/auth-store'
-import { Button } from '@/components/ui/button'
-import { Github, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/auth-store';
+import { Github, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function RegisterPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const signInWithOAuth = useAuthStore((s) => s.signInWithOAuth)
+  const [isLoading, setIsLoading] = useState(false);
+  const signInWithOAuth = useAuthStore((s) => s.signInWithOAuth);
 
   const handleOAuth = async (provider: 'google' | 'github') => {
-    setIsLoading(true)
-    await signInWithOAuth(provider)
-  }
+    setIsLoading(true);
+    await signInWithOAuth(provider);
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-sm p-6 space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Регистрация</h1>
-          <p className="text-muted-foreground mt-2">
-            Создайте аккаунт через OAuth
-          </p>
+          <p className="text-muted-foreground mt-2">Создайте аккаунт через OAuth</p>
         </div>
 
         <div className="space-y-3">
@@ -72,5 +70,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
