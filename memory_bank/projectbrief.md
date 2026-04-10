@@ -5,7 +5,7 @@
 **Ссылка на репозиторий:** https://github.com/scov3/linklayer  
 **Текущий статус:** Окружение настроено, готовы к разработке аутентификации  
 **Дата инициализации:** 14 марта 2026 года  
-**Процент выполнения:** 46% (6/13 deliverables completed, 0 in progress)
+**Процент выполнения:** 46% (6/13 deliverables completed, 1 in progress)
 
 **Краткое описание:**  
 Проект находится на начальной стадии разработки. Создана базовая структура проекта, инициализирована система Memory Bank для документации и отслеживания прогресса.
@@ -14,12 +14,12 @@
 
 | ID | Deliverable | Status | Weight |
 |---|---|---|---|
-| DLV-001 | Создание Product Requirements Document | completed | 4 |
-| DLV-002 | Создание Design Document | completed | 7 |
-| DLV-003 | Инициализация проекта Next.js, Supabase, настройка CI/CD | completed | 6 |
-| DLV-004 | Реализация OAuth и системы пользователей | completed | 7 |
-| DLV-005 | Реализация CRUD для заметок и хранилищ | completed | 7 |
-| DLV-006 | Реализация тегов и связей между заметками | pending | 9 |
+| DLV-001 | Создание Product Requirements Document | completed | 5 |
+| DLV-002 | Создание Design Document | completed | 8 |
+| DLV-003 | Инициализация проекта Next.js, Supabase, настройка CI/CD | completed | 7 |
+| DLV-004 | Реализация OAuth и системы пользователей | completed | 8 |
+| DLV-005 | Реализация CRUD для заметок и хранилищ | completed | 8 |
+| DLV-006 | Реализация тегов и связей между заметками | in_progress | 9 |
 | DLV-007 | Реализация классического режима графа | pending | 9 |
 | DLV-008 | Реализация физического режима графа | pending | 9 |
 | DLV-009 | Реализация совместных хранилищ и чата | pending | 7 |
