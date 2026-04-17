@@ -27,17 +27,25 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     set({ isLoading: true });
     const supabase = createClient();
 
-    const { data, error } = await supabase
-      .from('vaults')
-      .select('*')
-      .order('updated_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('vaults')
+        .select('*')
+        .order('updated_at', { ascending: false });
 
-    console.log('[VaultStore] fetchVaults result:', { count: data?.length, error });
+      console.log('[VaultStore] fetchVaults result:', { count: data?.length, error });
 
-    if (!error && data) {
-      set({ vaults: data, isLoading: false });
-    } else {
-      console.error('[VaultStore] Error:', error);
+      if (error) {
+        console.error('[VaultStore] Error:', error);
+        set({ vaults: [] });
+        return;
+      }
+
+      set({ vaults: data || [] });
+    } catch (error) {
+      console.error('[VaultStore] Unexpected fetchVaults error:', error);
+      set({ vaults: [] });
+    } finally {
       set({ isLoading: false });
     }
   },
@@ -94,16 +102,25 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
     set({ isCurrentVaultLoading: true });
 
-    const { data, error } = await supabase.from('vaults').select('*').eq('id', id).single();
+    try {
+      const { data, error } = await supabase.from('vaults').select('*').eq('id', id).maybeSingle();
 
-    if (error) {
-      console.error('[VaultStore] Error fetching vault by id:', error);
+      if (error) {
+        console.error('[VaultStore] Error fetching vault by id:', error);
+        set({ currentVault: null });
+        throw error;
+      }
+
+      if (!data) {
+        set({ currentVault: null });
+        throw new Error('Vault not found');
+      }
+
+      set({ currentVault: data });
+      return data;
+    } finally {
       set({ isCurrentVaultLoading: false });
-      throw error;
     }
-
-    set({ currentVault: data, isCurrentVaultLoading: false });
-    return data;
   },
 
   deleteVault: async (id) => {

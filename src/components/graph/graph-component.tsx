@@ -4,7 +4,7 @@ import { useNotesStore } from '@/store/notes-store';
 import { useVaultStore } from '@/store/vault-store';
 import cytoscape, { type Core, type ElementDefinition } from 'cytoscape';
 import coseBilkent from 'cytoscape-cose-bilkent';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 // Регистрация расширения
 cytoscape.use(coseBilkent);
@@ -17,16 +17,12 @@ export default function GraphComponent({ vaultId }: GraphComponentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
   const { notes } = useNotesStore();
-  const { currentVault } = useVaultStore();
+  useVaultStore();
 
-  useEffect(() => {
-    if (!containerRef.current || !notes.length) return;
-
-    // Подготовка данных для графа
+  const buildElements = useCallback(() => {
     const elements: ElementDefinition[] = [];
 
-    // Добавляем узлы (заметки)
-    notes.forEach((note) => {
+    for (const note of notes) {
       elements.push({
         data: {
           id: note.id,
@@ -34,13 +30,10 @@ export default function GraphComponent({ vaultId }: GraphComponentProps) {
         },
       });
 
-      // Добавляем связи между заметками (если есть)
-      // Пока просто добавим связи на основе тегов
       if (note.tags && note.tags.length > 0) {
-        note.tags.forEach((tag) => {
+        for (const tag of note.tags) {
           const tagNodeId = `tag-${tag.name}`;
 
-          // Создаем узел тега, если его еще нет
           if (!elements.some((el) => el.data?.id === tagNodeId)) {
             elements.push({
               data: {
@@ -51,7 +44,6 @@ export default function GraphComponent({ vaultId }: GraphComponentProps) {
             });
           }
 
-          // Создаем связь между заметкой и тегом
           elements.push({
             data: {
               id: `edge-${note.id}-${tagNodeId}`,
@@ -59,9 +51,16 @@ export default function GraphComponent({ vaultId }: GraphComponentProps) {
               target: tagNodeId,
             },
           });
-        });
+        }
       }
-    });
+    }
+
+    return elements;
+  }, [notes]);
+
+  useEffect(() => {
+    if (!containerRef.current || !notes.length) return;
+    const elements = buildElements();
 
     // Инициализация Cytoscape
     const cy = cytoscape({
@@ -123,57 +122,17 @@ export default function GraphComponent({ vaultId }: GraphComponentProps) {
         cyRef.current.destroy();
       }
     };
-  }, [notes, currentVault]);
+  }, [buildElements, notes]);
 
   // Обновляем граф при изменении данных
   useEffect(() => {
     if (cyRef.current && notes.length > 0) {
-      // Обновляем элементы графа
       cyRef.current.elements().remove();
-
-      const elements: ElementDefinition[] = [];
-
-      // Добавляем узлы (заметки)
-      notes.forEach((note) => {
-        elements.push({
-          data: {
-            id: note.id,
-            label: note.title,
-          },
-        });
-
-        // Добавляем связи между заметками на основе тегов
-        if (note.tags && note.tags.length > 0) {
-          note.tags.forEach((tag) => {
-            const tagNodeId = `tag-${tag.name}`;
-
-            // Создаем узел тега, если его еще нет
-            if (!cyRef.current!.getElementById(tagNodeId).length) {
-              elements.push({
-                data: {
-                  id: tagNodeId,
-                  label: `#${tag.name}`,
-                  type: 'tag',
-                },
-              });
-            }
-
-            // Создаем связь между заметкой и тегом
-            elements.push({
-              data: {
-                id: `edge-${note.id}-${tagNodeId}`,
-                source: note.id,
-                target: tagNodeId,
-              },
-            });
-          });
-        }
-      });
-
+      const elements = buildElements();
       cyRef.current.add(elements);
       cyRef.current.layout({ name: 'cose-bilkent' }).run();
     }
-  }, [notes]);
+  }, [buildElements, notes]);
 
   return (
     <div

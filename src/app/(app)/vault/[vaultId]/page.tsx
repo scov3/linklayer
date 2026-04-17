@@ -28,9 +28,12 @@ export default function VaultPage() {
   // Загрузка информации о конкретном хранилище
   useEffect(() => {
     if (vaultId) {
-      fetchVaultById(vaultId);
-      // Также загрузим заметки для этого хранилища
-      fetchNotes(vaultId);
+      void fetchVaultById(vaultId).catch((error) => {
+        console.error('[VaultPage] fetchVaultById error:', error);
+      });
+      void fetchNotes(vaultId).catch((error) => {
+        console.error('[VaultPage] fetchNotes error:', error);
+      });
     }
   }, [vaultId, fetchVaultById, fetchNotes]);
 
@@ -107,25 +110,11 @@ export default function VaultPage() {
                 ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
                 : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
             }`}
-            onClick={() => setActiveTab('chat')}
+            onClick={() => setActiveTab('graph')}
           >
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Чат
-            </div>
-          </button>
-          <button
-            type="button"
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'settings'
-                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
-                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
-            }`}
-            onClick={() => setActiveTab('settings')}
-          >
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Участники
+              <Network className="w-4 h-4" />
+              Граф
             </div>
           </button>
           <button
@@ -136,6 +125,34 @@ export default function VaultPage() {
                 : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
             }`}
             onClick={() => setActiveTab('chat')}
+          >
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Чат
+            </div>
+          </button>
+          <button
+            type="button"
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'members'
+                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
+                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
+            }`}
+            onClick={() => setActiveTab('members')}
+          >
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Участники
+            </div>
+          </button>
+          <button
+            type="button"
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'settings'
+                ? 'border-[hsl(47,27%,75%)] text-[hsl(47,27%,75%)]'
+                : 'border-transparent text-muted-foreground hover:text-[hsl(47,27%,75%)]'
+            }`}
+            onClick={() => setActiveTab('settings')}
           >
             <div className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -229,11 +246,13 @@ export default function VaultPage() {
                   <Network className="w-12 h-12 mx-auto text-muted-foreground" />
                   <h3 className="mt-4 font-semibold">Граф знаний</h3>
                   <p className="mt-2 text-muted-foreground">
-                    Визуальное представление связей между заметками
+                    На текущем этапе доступно только базовое отображение графа без редактора.
                   </p>
                   <div className="flex gap-2 mt-4 justify-center">
-                    <Button variant="outline">Классический режим</Button>
-                    <Button variant="outline">Физический режим</Button>
+                    <Button variant="outline">Классический просмотр</Button>
+                    <Button variant="outline" disabled>
+                      Физический режим скоро
+                    </Button>
                   </div>
                 </div>
               </div>
