@@ -76,10 +76,7 @@ async function addTagsToNote(supabase: any, note: Note, tagNames: string[]): Pro
   }
 
   // Создаем связи между заметкой и тегами
-  const tagConnections = tagNames.map((tagName) => {
-    const tag = tagsWithIds.find((t) => t.name === tagName);
-    return { note_id: note.id, tag_id: tag!.id };
-  });
+  const tagConnections = tagsWithIds.map((tag) => ({ note_id: note.id, tag_id: tag.id }));
 
   const { error: connectionError } = await supabase
     .from('note_tags')
@@ -161,10 +158,7 @@ async function updateNoteTags(
   }
 
   // Создаем связи между заметкой и тегами
-  const tagConnections = tagNames.map((tagName) => {
-    const tag = tagsWithIds.find((t) => t.name === tagName);
-    return { note_id: noteId, tag_id: tag!.id };
-  });
+  const tagConnections = tagsWithIds.map((tag) => ({ note_id: noteId, tag_id: tag.id }));
 
   const { error: connectionError } = await supabase
     .from('note_tags')
@@ -272,7 +266,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     // Обрабатываем теги
     const noteWithTags = await addTagsToNote(supabase, noteData, tagNames);
 
-    set((state) => ({ notes: [noteWithTags, ...state.notes] }));
+    set((state) => ({ notes: [noteWithTags, ...state.notes], currentNote: noteWithTags }));
     return noteWithTags;
   },
 

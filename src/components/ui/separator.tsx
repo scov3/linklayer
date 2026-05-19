@@ -1,12 +1,16 @@
 import { cn } from '@/lib/utils/cn';
-import * as React from 'react';
+
+interface SeparatorProps extends React.HTMLAttributes<HTMLHRElement> {
+  orientation?: 'horizontal' | 'vertical';
+  decorative?: boolean;
+}
 
 function Separator({
   className,
   orientation = 'horizontal',
   decorative = true,
   ...props
-}: React.ComponentProps<'hr'>) {
+}: SeparatorProps) {
   return (
     <hr
       role={decorative ? undefined : 'separator'}

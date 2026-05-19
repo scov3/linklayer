@@ -1,7 +1,7 @@
 'use client';
 
+import { MessageDialog, PromptDialog } from '@/components/ui/app-dialog';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/auth-store';
 import { useVaultStore } from '@/store/vault-store';
 import { FolderOpen, LogOut, Plus } from 'lucide-react';
@@ -12,6 +12,9 @@ export default function VaultPage() {
   const { vaults, fetchVaults, createVault, isLoading } = useVaultStore();
   const { user, signOut, initialize } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -24,15 +27,16 @@ export default function VaultPage() {
     }
   }, [user, fetchVaults]);
 
-  const handleCreateVault = async () => {
-    const name = prompt('Название хранилища:');
-    if (name) {
-      try {
-        await createVault(name);
-      } catch (error) {
-        console.error('Error creating vault:', error);
-        alert('Ошибка создания хранилища');
-      }
+  const handleCreateVault = async (name: string) => {
+    setIsCreating(true);
+    try {
+      await createVault(name);
+      setIsCreateOpen(false);
+    } catch (error) {
+      console.error('Error creating vault:', error);
+      setErrorMessage('Не удалось создать хранилище. Попробуйте еще раз.');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -69,7 +73,7 @@ export default function VaultPage() {
       <main className="container py-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-semibold">Хранилища</h2>
-          <Button onClick={handleCreateVault}>
+          <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Создать
           </Button>
@@ -97,6 +101,25 @@ export default function VaultPage() {
           </div>
         )}
       </main>
+
+      <PromptDialog
+        open={isCreateOpen}
+        title="Новое хранилище"
+        description="Создайте пространство для заметок, тегов и связей."
+        label="Название хранилища"
+        placeholder="Например: Исследования"
+        confirmLabel="Создать"
+        loading={isCreating}
+        onSubmit={handleCreateVault}
+        onCancel={() => setIsCreateOpen(false)}
+      />
+
+      <MessageDialog
+        open={Boolean(errorMessage)}
+        title="Ошибка"
+        description={errorMessage || undefined}
+        onClose={() => setErrorMessage(null)}
+      />
     </div>
   );
 }

@@ -1,91 +1,153 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Hash, Save, Tag, X } from 'lucide-react';
+import { Hash, Loader2, Save, Tag, Trash2, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-// Динамический импорт markdown редактора
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
+
+type EditorTag = string | { name: string };
 
 interface NoteEditorProps {
   note?: {
     id?: string;
     title: string;
     content: string;
-    tags?: string[];
-  };
+    tags?: EditorTag[];
+  } | null;
   onSave: (title: string, content: string, tags: string[]) => Promise<void>;
   onCancel: () => void;
   onDelete?: () => Promise<void>;
+  onRequestDelete?: () => void;
 }
 
-export default function NoteEditor({ note, onSave, onCancel, onDelete }: NoteEditorProps) {
+function normalizeTag(tag: EditorTag) {
+  return typeof tag === 'string' ? tag : tag.name;
+}
+
+export default function NoteEditor({
+  note,
+  onSave,
+  onCancel,
+  onDelete,
+  onRequestDelete,
+}: NoteEditorProps) {
+  const initialTags = useMemo(() => note?.tags?.map(normalizeTag) || [], [note?.tags]);
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
-  const [tags, setTags] = useState<string[]>(note?.tags || []);
+  const [tags, setTags] = useState<string[]>(initialTags);
   const [newTag, setNewTag] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setTitle(note?.title || '');
+    setContent(note?.content || '');
+    setTags(initialTags);
+    setNewTag('');
+  }, [initialTags, note?.content, note?.title]);
+
+  const hasChanges =
+    title !== (note?.title || '') ||
+    content !== (note?.content || '') ||
+    tags.join('|') !== initialTags.join('|');
 
   const handleAddTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag('');
-    }
+    const tag = newTag.trim().replace(/^#/, '');
+    if (!tag || tags.includes(tag)) return;
+
+    setTags([...tags, tag]);
+    setNewTag('');
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && newTag.trim()) {
-      e.preventDefault();
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && newTag.trim()) {
+      event.preventDefault();
       handleAddTag();
     }
   };
 
   const handleSave = async () => {
-    if (!title.trim()) return;
+    const safeTitle = title.trim();
+    if (!safeTitle) return;
 
     setIsSaving(true);
     try {
-      await onSave(title, content, tags);
+      await onSave(safeTitle, content, tags);
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (!note?.id || !onDelete) return;
+
+    if (onRequestDelete) {
+      onRequestDelete();
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Редактирование заметки</CardTitle>
-          <div className="flex gap-2">
+    <Card className="w-full border-primary/30 bg-card/95 shadow-md">
+      <CardHeader className="space-y-4 rounded-t-xl border-b border-primary/20 bg-primary/10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-foreground">
+              {note?.id ? 'Редактирование заметки' : 'Новая заметка'}
+            </CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Markdown, теги и быстрое сохранение в одном месте.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
             {note?.id && onDelete && (
-              <Button variant="outline" size="sm" onClick={onDelete} disabled={isSaving}>
-                <X className="w-4 h-4 mr-2" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isSaving || isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
                 Удалить
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={onCancel} disabled={isSaving}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              disabled={isSaving || isDeleting}
+            >
+              <X className="mr-2 h-4 w-4" />
               Отмена
             </Button>
-            <Button onClick={handleSave} disabled={isSaving || !title.trim()}>
+            <Button onClick={handleSave} disabled={isSaving || isDeleting || !title.trim()}>
               {isSaving ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2" />
-                  Сохранение...
-                </>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Сохранить
-                </>
+                <Save className="mr-2 h-4 w-4" />
               )}
+              {hasChanges ? 'Сохранить' : 'Сохранено'}
             </Button>
           </div>
         </div>
@@ -93,48 +155,56 @@ export default function NoteEditor({ note, onSave, onCancel, onDelete }: NoteEdi
       <CardContent>
         <div className="space-y-6">
           <div>
-            <Label htmlFor="title" className="text-sm font-medium">
+            <Label htmlFor="note-title" className="text-sm font-medium">
               Заголовок
             </Label>
             <Input
-              id="title"
+              id="note-title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(event) => setTitle(event.target.value)}
               placeholder="Введите заголовок заметки..."
-              className="text-lg font-semibold mt-1"
+              className="mt-1 text-lg font-semibold"
+              autoFocus
             />
           </div>
 
           <div>
-            <Label htmlFor="content" className="text-sm font-medium">
+            <Label htmlFor="note-content" className="text-sm font-medium">
               Содержимое
             </Label>
-            <div className="mt-1" data-color-mode="light">
+            <div
+              className="mt-2 overflow-hidden rounded-xl border border-primary/30 bg-background"
+              data-color-mode="light"
+            >
               <MDEditor
                 value={content}
-                onChange={(val = '') => setContent(val)}
-                height={400}
+                onChange={(value = '') => setContent(value)}
+                height={460}
                 preview="edit"
+                textareaProps={{
+                  id: 'note-content',
+                  placeholder: 'Пишите заметку в Markdown...',
+                }}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium flex items-center">
-                <Hash className="w-4 h-4 mr-1" />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Label className="flex items-center text-sm font-medium">
+                <Hash className="mr-1 h-4 w-4" />
                 Теги
               </Label>
               <div className="relative flex-1">
-                <input
+                <Input
                   type="text"
                   value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
+                  onChange={(event) => setNewTag(event.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Добавить тег..."
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pl-9"
+                  className="pl-9"
                 />
-                <Tag className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+                <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               </div>
               <Button
                 type="button"
@@ -147,7 +217,7 @@ export default function NoteEditor({ note, onSave, onCancel, onDelete }: NoteEdi
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-2 min-h-10 p-2 border rounded-md">
+            <div className="flex min-h-11 flex-wrap gap-2 rounded-lg border border-primary/30 bg-primary/10 p-2">
               {tags.length === 0 ? (
                 <span className="text-sm text-muted-foreground">Нет тегов</span>
               ) : (
@@ -157,7 +227,8 @@ export default function NoteEditor({ note, onSave, onCancel, onDelete }: NoteEdi
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 rounded-full hover:bg-secondary-foreground/25"
+                      className="ml-1 rounded-full px-1 hover:bg-secondary-foreground/20"
+                      aria-label={`Удалить тег ${tag}`}
                     >
                       ×
                     </button>
