@@ -8,7 +8,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function LoginPage() {
-  const { signInWithOAuth, isLoading, initialize, user } = useAuthStore();
+  const signInWithOAuth = useAuthStore((state) => state.signInWithOAuth);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const initialize = useAuthStore((state) => state.initialize);
+  const user = useAuthStore((state) => state.user);
   const router = useRouter();
 
   useEffect(() => {

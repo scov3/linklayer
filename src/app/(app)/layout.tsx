@@ -2,47 +2,47 @@
 
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
-import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/store/auth-store';
 import { useVaultStore } from '@/store/vault-store';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { vaults, fetchVaults } = useVaultStore();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const vaults = useVaultStore((state) => state.vaults);
+  const fetchVaults = useVaultStore((state) => state.fetchVaults);
+  const user = useAuthStore((state) => state.user);
+  const isAuthLoading = useAuthStore((state) => state.isLoading);
+  const initializeAuth = useAuthStore((state) => state.initialize);
+  const fetchedForUserRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
+    initializeAuth();
+  }, [initializeAuth]);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('[AppLayout] Session:', !!session?.user);
-      setUser(session?.user ?? null);
-      setLoading(false);
+  useEffect(() => {
+    if (user && fetchedForUserRef.current !== user.id) {
+      fetchedForUserRef.current = user.id;
+      void fetchVaults();
+    }
 
-      if (session?.user) {
-        fetchVaults();
-      }
-    });
+    if (!user) {
+      fetchedForUserRef.current = null;
+    }
+  }, [fetchVaults, user]);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('[AppLayout] Auth change:', !!session?.user);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchVaults();
-      }
-    });
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      router.replace('/login');
+    }
+  }, [isAuthLoading, router, user]);
 
-    return () => subscription.unsubscribe();
-  }, [fetchVaults]);
-
-  if (loading) {
+  if (isAuthLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -50,10 +50,7 @@ export default function AppLayout({
     );
   }
 
-  if (!user) {
-    window.location.href = '/login';
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <div className="flex flex-col h-screen">

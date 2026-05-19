@@ -7,6 +7,7 @@ interface VaultState {
   currentVault: Vault | null;
   isLoading: boolean;
   isCurrentVaultLoading: boolean;
+  loadedOwnerId: string | null;
 
   fetchVaults: () => Promise<void>;
   fetchVaultById: (id: string) => Promise<Vault>;
@@ -21,13 +22,29 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   currentVault: null,
   isLoading: false,
   isCurrentVaultLoading: false,
+  loadedOwnerId: null,
 
   fetchVaults: async () => {
     console.log('[VaultStore] fetchVaults called');
-    set({ isLoading: true });
     const supabase = createClient();
 
     try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const user = userData.user;
+
+      if (userError || !user) {
+        console.error('[VaultStore] fetchVaults auth error:', userError);
+        set({ vaults: [], loadedOwnerId: null, isLoading: false });
+        return;
+      }
+
+      const state = get();
+      if (state.isLoading || state.loadedOwnerId === user.id) {
+        return;
+      }
+
+      set({ isLoading: true });
+
       const { data, error } = await supabase
         .from('vaults')
         .select('*')
@@ -37,14 +54,14 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
       if (error) {
         console.error('[VaultStore] Error:', error);
-        set({ vaults: [] });
+        set({ vaults: [], loadedOwnerId: null });
         return;
       }
 
-      set({ vaults: data || [] });
+      set({ vaults: data || [], loadedOwnerId: user.id });
     } catch (error) {
       console.error('[VaultStore] Unexpected fetchVaults error:', error);
-      set({ vaults: [] });
+      set({ vaults: [], loadedOwnerId: null });
     } finally {
       set({ isLoading: false });
     }

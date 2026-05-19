@@ -6,26 +6,17 @@ import { useAuthStore } from '@/store/auth-store';
 import { useVaultStore } from '@/store/vault-store';
 import { FolderOpen, LogOut, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function VaultPage() {
-  const { vaults, fetchVaults, createVault, isLoading } = useVaultStore();
-  const { user, signOut, initialize } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const vaults = useVaultStore((state) => state.vaults);
+  const createVault = useVaultStore((state) => state.createVault);
+  const isLoading = useVaultStore((state) => state.isLoading);
+  const user = useAuthStore((state) => state.user);
+  const signOut = useAuthStore((state) => state.signOut);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-    initialize();
-  }, [initialize]);
-
-  useEffect(() => {
-    if (user) {
-      fetchVaults();
-    }
-  }, [user, fetchVaults]);
 
   const handleCreateVault = async (name: string) => {
     setIsCreating(true);
@@ -39,14 +30,6 @@ export default function VaultPage() {
       setIsCreating(false);
     }
   };
-
-  if (!mounted) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
 
   if (!user) {
     return (

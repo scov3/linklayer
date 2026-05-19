@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Hash, Loader2, Save, Tag, Trash2, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
@@ -37,7 +37,8 @@ export default function NoteEditor({
   onDelete,
   onRequestDelete,
 }: NoteEditorProps) {
-  const initialTags = useMemo(() => note?.tags?.map(normalizeTag) || [], [note?.tags]);
+  const initialTags = note?.tags?.map(normalizeTag) || [];
+  const initialTagsKey = initialTags.join('|');
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
   const [tags, setTags] = useState<string[]>(initialTags);
@@ -50,12 +51,12 @@ export default function NoteEditor({
     setContent(note?.content || '');
     setTags(initialTags);
     setNewTag('');
-  }, [initialTags, note?.content, note?.title]);
+  }, [initialTagsKey, note?.content, note?.id, note?.title]);
 
   const hasChanges =
     title !== (note?.title || '') ||
     content !== (note?.content || '') ||
-    tags.join('|') !== initialTags.join('|');
+    tags.join('|') !== initialTagsKey;
 
   const handleAddTag = () => {
     const tag = newTag.trim().replace(/^#/, '');

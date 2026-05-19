@@ -3,30 +3,61 @@
 ## Статус проекта
 
 **Текущая фаза:** Фаза 1 - MVP (заметки, графы, базовая коллаборация)  
-**Процент выполнения:** 61% (8 из 14 deliverables завершено, 1 в работе)
+**Процент выполнения:** 59% (8 из 14 deliverables завершено, 2 in_progress)
 
 ### Breakdown по deliverables
 
 | ID | Название | Статус | Вес | Прогресс |
 |----|----------|--------|-----|----------|
 | DLV-001 | PRD и требования | ✅ completed | 5% | 100% |
-| DLV-002 | Техническое проектирование | ✅ completed | 8% | 100% |
+| DLV-002 | Техническое проектирование | ✅ completed | 7% | 100% |
 | DLV-003 | Настройка окружения | ✅ completed | 7% | 100% |
 | DLV-004 | Аутентификация | ✅ completed | 8% | 100% |
-| DLV-005 | CRUD и редактор заметок | 🔄 in_progress | 8% | 90% |
-| DLV-006 | Теги и связи | ✅ completed | 9% | 100% |
+| DLV-005 | CRUD и редактор заметок | ✅ completed | 8% | 100% |
+| DLV-006 | Теги и связи | ✅ completed | 7% | 100% |
 | DLV-007 | Граф (Режим 1) | ✅ completed | 8% | 100% |
-| DLV-008 | Редактор графа | ⏳ pending | 8% | 0% |
+| DLV-008 | Редактор графа | 🔄 in_progress | 8% | 80% |
 | DLV-009 | Совместная работа | ⏳ pending | 7% | 0% |
 | DLV-010 | Импорт/Экспорт | ⏳ pending | 7% | 0% |
 | DLV-011 | Тестирование и оптимизация | ⏳ pending | 7% | 0% |
 | DLV-012 | Деплой и документация | ⏳ pending | 4% | 0% |
-| DLV-013 | UI и шрифты | ✅ completed | 10% | 100% |
-| DLV-014 | Физический режим графа | ⏳ pending | 8% | 0% |
+| DLV-013 | UI и шрифты | ✅ completed | 9% | 100% |
+| DLV-014 | Физический режим графа | 🔄 in_progress | 8% | 80% |
 
-**Общий прогресс:** 61% ✅
+**Общий прогресс:** 59% ✅
 
 ## Changelog
+
+### 2026-05-03 - Реализация системы графов (DLV-007, DLV-008, DLV-014)
+
+#### Завершено
+- `src/store/links-store.ts` — Zustand store: fetchLinks (двухшаговый), createLink, deleteLink
+- `src/components/graph/classic-graph.tsx` — полноценный Cytoscape-граф: заметки + links из таблицы `links` + теги, hover/click
+- `src/components/graph/physics-graph.tsx` — d3-force + canvas: физическая симуляция, стрелки, hover
+- `src/components/graph/graph-editor-panel.tsx` — панель создания/удаления связей с валидацией
+- `src/components/graph/graph-tab.tsx` — контейнер с переключателем Classic/Physics и редактором
+- `vault/[vaultId]/page.tsx` — граф-таб заменён на полноценный `GraphTab` с реальными данными
+- `bun add -d @types/d3-force` — установлены типы
+
+#### Известные проблемы
+- TypeScript ошибки в `physics-graph.tsx` (типизация SimulationNodeDatum) — требуют исправления
+- `graph-editor-panel.tsx` использует named export, `graph-tab.tsx` ожидает default — требует правки
+
+#### Последний коммит
+`543e2b4` — коммит до начала сессии
+
+---
+
+### 2026-04-17 - Реализация links-store и GraphEditorPanel (DLV-008)
+
+#### Завершено
+- `src/store/links-store.ts` — Zustand-стор с `fetchLinks` (двухшаговый: notes→links), `createLink`, `deleteLink`, `clearLinks`
+- `src/components/graph/graph-editor-panel.tsx` — панель управления связями: форма с двумя select, валидация (self-loop, duplicate), список связей с кнопкой удаления, loading states, бежевая/нейтральная палитра, полная dark mode поддержка
+
+#### Последний коммит
+`543e2b4` — до начала этой сессии
+
+---
 
 ### 2026-04-17 - Синхронизация Memory Bank
 
@@ -267,14 +298,15 @@ src/
 ## Контроль изменений
 
 ### Last Checked Commit
-- **Дата**: 2026-04-17
-- **Хеш**: `f99affc3f040eaecb43170c5d6fc03e3fe1ff7c7`
-- **Статус**: Проверено актуальное состояние репозитория перед синхронизацией Memory Bank
+- **Дата**: 2026-05-03
+- **Хеш**: `543e2b4` (feat: add vault note editor workflow)
+- **Статус**: Сессия 2026-05-03 — реализована система графов (DLV-007/008/014), исправлены веса в projectbrief.md (было 104, стало 100)
 
 ### Git Status
-- Репозиторий инициализирован
-- Созданы документы в папке docs/
-- Обновлена система Memory Bank
+- Новые файлы: `src/store/links-store.ts`, `src/components/graph/classic-graph.tsx`, `src/components/graph/physics-graph.tsx`, `src/components/graph/graph-editor-panel.tsx`, `src/components/graph/graph-tab.tsx`
+- Обновлены: `vault/[vaultId]/page.tsx`, все файлы memory_bank/
+- Установлен пакет: `@types/d3-force`
+- Известные issues: TypeScript ошибки в physics-graph.tsx и graph-tab.tsx (import)
 
 ## Метрики
 
